@@ -315,7 +315,7 @@ export default function Home() {
                 ) : (
                   <div>
                     <p className="font-semibold">
-                      You don't own any Smol Brains.
+                      You don&apos;t own any Smol Brains.
                     </p>
                     <a
                       href="https://marketplace.treasure.lol/collection/smol-brains"
