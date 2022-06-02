@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  height: 100vh;
+  font-family: "Rubik", sans-serif;
+  background: rgba(26, 26, 76, 1);
+}
+
+/* https://seek-oss.github.io/capsize/ */
+.capsize::before {
+  content: "";
+  margin-bottom: -0.1641em;
+  display: table;
+}
+
+.capsize::after {
+  content: "";
+  margin-top: -0.1914em;
+  display: table;
+}
+
+.bg-brown-gradient {
+  background: radial-gradient(
+      245.62% 100% at 50% 0%,
+      rgba(0, 0, 0, 0) 46.91%,
+      #533215 100%
+    ),
+    radial-gradient(58.04% 58.04% at 50% 50%, #3a2618 0%, #25180f 100%);
+}
+
+.bg-red-gradient {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 80, 80, 0.125) 0%,
+    rgba(255, 80, 80, 0.25) 44.46%,
+    rgba(255, 80, 80, 0.125) 100%
+  );
+}
+
+.border-brown-divider {
+  border-image-slice: 1;
+  border-image-source: linear-gradient(
+    90deg,
+    rgba(44, 31, 21, 0) 0%,
+    #5e402c 52.46%,
+    rgba(44, 31, 21, 0) 100%
+  );
+}
+
+.border-brown-divider-vertical {
+  border-image-slice: 1;
+  border-image-source: linear-gradient(
+    180deg,
+    rgba(62, 44, 31, 0) 0%,
+    #3e2c1f 51.56%,
+    rgba(62, 44, 31, 0) 100%
+  );
+}
+
+.border-gold-divider {
+  border-image-slice: 1;
+  border-image-source: linear-gradient(
+    90deg,
+    rgba(44, 31, 21, 0) 0%,
+    #ffb950 52.46%,
+    rgba(44, 31, 21, 0) 100%
+  );
+}
+
+.text-gold-gradient {
+  background: radial-gradient(50% 50% at 50% 50%, #ffd79c 0%, #ff9900 100%);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (min-width: 1024px) {
+  .maskImage {
+    position: relative;
+    -webkit-transform-origin: right center;
+    -ms-transform-origin: right center;
+    transform-origin: right center;
+    -webkit-transform: perspective(120px) rotateY(-4deg) translatez(0)
+      translatex(-80px);
+    -ms-transform: perspective(120px) rotateY(-4deg) translatez(0)
+      translatex(-80px);
+    transform: perspective(120px) rotateY(-4deg) translatez(0) translatex(-80px);
+    z-index: 0;
+    will-change: -webkit-mask-position, -moz-mask-position, mask-position,
+      transform;
+    overflow: hidden;
+    -webkit-mask-image: radial-gradient(
+      circle at 50% 50%,
+      black 10%,
+      rgba(0, 0, 0, 0.1) 50%
+    );
+    mask-image: radial-gradient(
+      circle at 50% 50%,
+      black 10%,
+      rgba(0, 0, 0, 0.1) 50%
+    );
+    -webkit-mask-position: 0% 50%;
+    mask-position: 0% 50%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: 200% 200%;
+    mask-size: 200% 200%;
+    right: -80px;
+    padding: 1rem;
+  }
+}

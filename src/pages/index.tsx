@@ -1,0 +1,340 @@
+import { useEffect, useState } from "react";
+
+import { ExternalLinkIcon } from "@heroicons/react/outline";
+import clsx from "clsx";
+import { Signer } from "ethers";
+import Image from "next/image";
+import { useAccount, useNetwork, useSigner } from "wagmi";
+
+import { Button } from "../components/Button";
+import { ConnectButton } from "../components/ConnectButton";
+import { Spinner } from "../components/Spinner";
+import { WrappedSmolImage } from "../components/WrappedSmolImage";
+import {
+  useApprove,
+  useChonkify,
+  useIsApproved,
+  useUnwrapSmol,
+  useUserTokens,
+  useWrapSmol,
+} from "../lib/hooks";
+import { AppContract } from "../types";
+import { generateMarketplaceIpfsUrl } from "../utils/image";
+
+export default function Home() {
+  const { data: accountData } = useAccount();
+
+  // Inventory
+  const { isLoading, tokens, wrappedTokens, refetchWrappedTokens } =
+    useUserTokens();
+  const wrappedTokenIds: number[] = wrappedTokens.map(({ tokenId }) => tokenId);
+
+  // Approvals
+  const isSmolBrainsApproved = useIsApproved(AppContract.SmolBrains);
+  const isSmolTreasuresApproved = useIsApproved(AppContract.SmolTreasures);
+  const { write: approveSmolBrains, isLoading: isApprovingSmolBrains } =
+    useApprove(AppContract.SmolBrains);
+  const { write: approveSmolTreasures, isLoading: isApprovingSmolTreasures } =
+    useApprove(AppContract.SmolTreasures);
+
+  // Actions
+  const {
+    write: wrapSmol,
+    isLoading: isWrappingSmol,
+    data: wrapData,
+  } = useWrapSmol();
+  const {
+    write: unwrapSmol,
+    isLoading: isUnwrappingSmol,
+    data: unwrapData,
+  } = useUnwrapSmol();
+  const {
+    write: chonkify,
+    isLoading: isChonkifying,
+    data: chonkifyData,
+  } = useChonkify();
+
+  const handleWrapSmol = (tokenId: number) => {
+    wrapSmol({
+      args: [tokenId],
+    });
+  };
+
+  const handleUnwrapSmol = (tokenId: number) => {
+    unwrapSmol({
+      args: [tokenId],
+    });
+  };
+
+  const handleChonkify = (tokenId: number) => {
+    chonkify({
+      args: [tokenId],
+    });
+  };
+
+  // State
+  const [selectedTokenId, setSelectedTokenId] = useState(
+    parseInt(tokens?.[0]?.tokenId ?? "0")
+  );
+  const selectedToken =
+    tokens?.find(({ tokenId }) => parseInt(tokenId) === selectedTokenId) ??
+    wrappedTokens.find(({ tokenId }) => tokenId === selectedTokenId);
+  const isSelectedWrapped = wrappedTokenIds.includes(selectedTokenId);
+
+  useEffect(() => {
+    const tokenIds = tokens?.map(({ tokenId }) => parseInt(tokenId));
+    if (
+      tokenIds &&
+      (!selectedTokenId ||
+        (!tokenIds.includes(selectedTokenId) && !isSelectedWrapped))
+    ) {
+      setSelectedTokenId(tokenIds[0]);
+    }
+  }, [selectedTokenId, tokens, isSelectedWrapped]);
+
+  useEffect(() => {
+    if (wrapData) {
+      refetchWrappedTokens();
+    }
+  }, [wrapData, refetchWrappedTokens]);
+
+  useEffect(() => {
+    if (unwrapData) {
+      refetchWrappedTokens();
+    }
+  }, [unwrapData, refetchWrappedTokens]);
+
+  useEffect(() => {
+    if (chonkifyData) {
+      refetchWrappedTokens();
+    }
+  }, [chonkifyData, refetchWrappedTokens]);
+
+  return (
+    <div className="container max-w-5xl mx-auto px-8 pb-12 space-y-10">
+      <div className="space-y-8 text-center">
+        <h1 className="p-5 inline-block text-4xl lg:text-6xl text-white font-bold uppercase bg-gray-primary shadow-dark-sharp">
+          Smol Quests
+        </h1>
+        <p className="lg:w-1/2 mx-auto text-xl text-gray-light font-medium">
+          <span className="underline decoration-orange-team underline-offset-8">
+            Wrap your Smol
+          </span>{" "}
+          to go on quests and transform your Smol.
+        </p>
+      </div>
+      <div className="shadow-[13px_13px_0px_rgba(255,148,77,1)]">
+        {isSelectedWrapped ? (
+          <>
+            {isChonkifying ? (
+              <div className="aspect-w-3 aspect-h-1 flex items-center justify-center bg-purple-primary">
+                <div className="flex items-center justify-center">
+                  <div className="w-10 h-10">
+                    <Spinner />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <WrappedSmolImage
+                token={selectedToken}
+                width={1500}
+                height={500}
+                layout="responsive"
+              />
+            )}
+          </>
+        ) : (
+          <img alt="" src="/img/banner.gif" />
+        )}
+      </div>
+      <div className="min-h-[150px] flex items-center justify-center bg-gray-primary shadow-dark-sharp">
+        {accountData ? (
+          <>
+            {isLoading ? (
+              <div className="w-10 h-10">
+                <Spinner />
+              </div>
+            ) : (
+              <>
+                {tokens && tokens.length > 0 ? (
+                  <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <div className="space-y-4">
+                      <h2 className="text-center font-semibold">
+                        Unwrapped Smols
+                      </h2>
+                      <div
+                        className="grid grid-cols-3 gap-4"
+                        style={{ gridAutoRows: "min-content" }}
+                      >
+                        {tokens.map(({ tokenId, name, image }) => (
+                          <button
+                            key={tokenId}
+                            className={clsx(
+                              "block aspect-square w-full overflow-hidden rounded-full border-4 border-purple-secondary hover:opacity-100 transition-all",
+                              parseInt(tokenId) === selectedTokenId
+                                ? "opacity-100 border-purple-primary"
+                                : "opacity-70 hover:border-purple-hover"
+                            )}
+                            onClick={() =>
+                              setSelectedTokenId(parseInt(tokenId))
+                            }
+                          >
+                            <img
+                              alt={name}
+                              src={generateMarketplaceIpfsUrl(image ?? "")}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="space-y-8">
+                        <div className="bg-gray-light shadow-dark-sharp">
+                          {isSelectedWrapped ? (
+                            <>
+                              <WrappedSmolImage
+                                token={selectedToken}
+                                isPfp
+                                width={256}
+                                height={256}
+                                layout="responsive"
+                              />
+                              <span className="block p-2 text-xs font-semibold bg-purple-secondary">
+                                Chonk Level {selectedToken.chonkSize}
+                              </span>
+                            </>
+                          ) : (
+                            <Image
+                              src={generateMarketplaceIpfsUrl(
+                                selectedToken?.image ?? ""
+                              )}
+                              width={256}
+                              height={256}
+                              layout="responsive"
+                            />
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-3">
+                          {isSelectedWrapped ? (
+                            <>
+                              {!isSmolTreasuresApproved &&
+                                selectedToken.chonkSize === 5 && (
+                                  <Button
+                                    onClick={() => approveSmolTreasures()}
+                                    disabled={isApprovingSmolTreasures}
+                                  >
+                                    {isApprovingSmolTreasures
+                                      ? "Approving..."
+                                      : "Approve Smol Treasures"}
+                                  </Button>
+                                )}
+                              {selectedToken.chonkSize < 6 && (
+                                <div className="flex flex-col gap-1 text-center">
+                                  <Button
+                                    onClick={() =>
+                                      handleChonkify(selectedTokenId)
+                                    }
+                                    disabled={isChonkifying}
+                                  >
+                                    {isChonkifying ? "Snacking..." : "Chonk!"}
+                                  </Button>
+                                  {selectedToken.chonkSize === 5 && (
+                                    <span className="text-xs text-gray-light">
+                                      Chonk Level 7 costs 50 Moon Rocks
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                              <Button
+                                onClick={() =>
+                                  handleUnwrapSmol(selectedTokenId)
+                                }
+                                disabled={isUnwrappingSmol}
+                                className="bg-transparent border border-purple-primary hover:bg-purple-dark"
+                              >
+                                {isUnwrappingSmol ? "Unwrapping..." : "Unwrap"}
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              {isSmolBrainsApproved ? (
+                                <Button
+                                  onClick={() =>
+                                    handleWrapSmol(selectedTokenId)
+                                  }
+                                  disabled={isWrappingSmol}
+                                >
+                                  {isWrappingSmol ? "Wrapping..." : "Wrap Smol"}
+                                </Button>
+                              ) : (
+                                <Button
+                                  onClick={() => approveSmolBrains()}
+                                  disabled={isApprovingSmolBrains}
+                                >
+                                  {isApprovingSmolBrains
+                                    ? "Approving..."
+                                    : "Approve Smols"}
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <h2 className="text-center font-semibold">
+                        Wrapped Smols
+                      </h2>
+                      <div
+                        className="grid grid-cols-3 gap-4"
+                        style={{ gridAutoRows: "min-content" }}
+                      >
+                        {wrappedTokens.map((token) => (
+                          <button
+                            key={token.tokenId}
+                            className={clsx(
+                              "block aspect-square w-full overflow-hidden rounded-full bg-gray-light border-4 border-purple-secondary hover:opacity-100 transition-all",
+                              token.tokenId === selectedTokenId
+                                ? "opacity-100 border-purple-primary"
+                                : "opacity-70 hover:border-purple-hover"
+                            )}
+                            onClick={() => setSelectedTokenId(token.tokenId)}
+                          >
+                            <WrappedSmolImage
+                              token={token}
+                              isPfp
+                              width={128}
+                              height={128}
+                              layout="responsive"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="font-semibold">
+                      You don't own any Smol Brains.
+                    </p>
+                    <a
+                      href="https://marketplace.treasure.lol/collection/smol-brains"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 hover:underline"
+                    >
+                      Buy on Treasure Marketplace
+                      <ExternalLinkIcon className="w-4 h-4" />
+                    </a>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        ) : (
+          <ConnectButton />
+        )}
+      </div>
+    </div>
+  );
+}

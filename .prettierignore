@@ -1,0 +1,13 @@
+.github/
+.husky/
+.next/
+abis/
+build/
+generated/
+node_modules/
+public/
+*.yaml
+.lintstagedrc
+.prettierignore
+.prettierrc
+yarn.lock
