@@ -214,6 +214,7 @@ export default function Home() {
                             />
                           )}
                         </div>
+                        {selectedToken && <span>Token ID: {selectedToken.tokenId}</span>}
                         <div className="flex flex-col gap-3">
                           {isSelectedWrapped ? (
                             <>
