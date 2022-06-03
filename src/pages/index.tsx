@@ -25,13 +25,8 @@ export default function Home() {
   const { data: accountData } = useAccount();
 
   // Inventory
-  const {
-    isLoading,
-    tokens,
-    wrappedTokens,
-    moonRocksBalance,
-    refetchWrappedTokens,
-  } = useUserTokens();
+  const { isLoading, tokens, wrappedTokens, refetchWrappedTokens } =
+    useUserTokens();
   const wrappedTokenIds: number[] = wrappedTokens.map(({ tokenId }) => tokenId);
 
   // Approvals

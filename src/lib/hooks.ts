@@ -39,6 +39,34 @@ export const useContractAddress = (contract: AppContract) => {
   return addresses[contract].toLowerCase();
 };
 
+export const useMoonRocksBalance = () => {
+  const { data: accountData } = useAccount();
+  const address = accountData?.address?.toLowerCase();
+  const smolTreasuresAddress = useContractAddress(AppContract.SmolTreasures);
+
+  const { data, status } = useQuery(
+    ["moonRocksBalance"],
+    () => {
+      console.debug("Re-fetching Moon Rocks balance");
+
+      return marketplaceClient.getUserTokenBalance({
+        id: address!,
+        token: `${smolTreasuresAddress}-0x1`,
+      });
+    },
+    {
+      enabled: !!isAddress,
+      keepPreviousData: true,
+      refetchInterval: 10_000,
+    }
+  );
+
+  return {
+    isLoading: status === "loading",
+    moonRocksBalance: data?.userTokens[0]?.quantity ?? 0,
+  };
+};
+
 export const useUserTokens = () => {
   const { data: accountData } = useAccount();
   const { data: signer } = useSigner();
@@ -60,26 +88,6 @@ export const useUserTokens = () => {
       keepPreviousData: true,
     }
   );
-
-  const { data: moonRocksBalanceData, status: moonRocksBalanceStatus } =
-    useQuery(
-      ["moonRocksBalance"],
-      () => {
-        console.debug("Re-fetching Moon Rocks balance");
-
-        return marketplaceClient.getUserTokenBalance({
-          id: address!,
-          token: `${contractAddresses[
-            AppContract.SmolTreasures
-          ].toLowerCase()}-0x1`,
-        });
-      },
-      {
-        enabled: !!isAddress,
-        keepPreviousData: true,
-        refetchInterval: 10_000,
-      }
-    );
 
   const {
     data: wrappedTokensData,
@@ -134,13 +142,9 @@ export const useUserTokens = () => {
   );
 
   return {
-    isLoading:
-      tokensStatus === "loading" ||
-      wrappedTokensStatus === "loading" ||
-      moonRocksBalanceStatus === "loading",
+    isLoading: tokensStatus === "loading" || wrappedTokensStatus === "loading",
     tokens: tokensData?.tokens,
     wrappedTokens: wrappedTokensData ?? [],
-    moonRocksBalance: moonRocksBalanceData?.userTokens[0]?.quantity ?? 0,
     refetchWrappedTokens,
   };
 };
