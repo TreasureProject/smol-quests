@@ -23,8 +23,8 @@ export const CONTRACT_ADDRESSES: Record<string, ContractMap> = {
   [chain.arbitrum.name]: {
     [AppContract.SmolBrains]: "0x6325439389E0797Ab35752B4F43a14C004f22A9c",
     [AppContract.SmolTreasures]: "0xc5295C6a183F29b7c962dF076819D44E0076860E",
-    [AppContract.WrappedSmols]: "0x0000000000000000000000000000000000000000",
-    [AppContract.EpisodeOne]: "0x0000000000000000000000000000000000000000",
+    [AppContract.WrappedSmols]: "0x1f245E83fB88A1e85b4A1c3e4B3c16660d54319a",
+    [AppContract.EpisodeOne]: "0x1a5261041E9340579f58401389d6dEe185b62804",
   },
 };
 
