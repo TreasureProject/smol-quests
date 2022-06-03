@@ -126,9 +126,10 @@ export const useUserTokens = () => {
           return {
             ...result,
             tokenId: parseInt(tokenIds[i]),
-            chonkSize: result.attributes?.find(
-              ({ trait_type: type }) => type === "Chonk Size"
-            )?.value,
+            chonkSize:
+              (result.attributes?.find(
+                ({ trait_type: type }) => type === "Chonk Size"
+              )?.value ?? 0) + 1,
           };
         })
       );
