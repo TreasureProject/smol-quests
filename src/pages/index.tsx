@@ -114,7 +114,7 @@ export default function Home() {
   }, [chonkifyData, refetchWrappedTokens]);
 
   return (
-    <div className="container max-w-5xl mx-auto px-8 pb-12 space-y-10">
+    <div className="container max-w-5xl mx-auto px-8 pb-12">
       <div className="space-y-8 text-center">
         <h1 className="p-5 inline-block text-4xl lg:text-6xl text-white font-bold uppercase bg-gray-primary shadow-dark-sharp">
           Smol Quests
@@ -125,8 +125,11 @@ export default function Home() {
           </span>{" "}
           to go on quests and transform your Smol.
         </p>
+        <h2 className="p-3 inline-block text-2xl lg:text-3xl text-white font-medium bg-gray-primary shadow-[5px_5px_0px_rgba(255,148,77,0.5)]">
+          Episode One: Chonks
+        </h2>
       </div>
-      <div className="relative shadow-[13px_13px_0px_rgba(255,148,77,1)]">
+      <div className="my-6 relative shadow-[13px_13px_0px_rgba(255,148,77,0.5)]">
         {isSelectedWrapped ? (
           <>
             {isChonkifying && (
@@ -147,7 +150,7 @@ export default function Home() {
           <img alt="" src="/img/banner.gif" />
         )}
       </div>
-      <div className="min-h-[150px] flex items-center justify-center bg-gray-primary shadow-dark-sharp">
+      <div className="mt-10 min-h-[150px] flex items-center justify-center bg-gray-primary shadow-dark-sharp">
         {accountData ? (
           <>
             {isLoading ? (
