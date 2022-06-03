@@ -7,9 +7,11 @@ import {
 } from "../generated/types";
 import { AppContract, ContractMap } from "./types";
 
+export const DEFAULT_REFETCH_INTERVAL = 2_000;
+export const LONG_REFETCH_INTERVAL = 8_000;
+
 // Chains
 export const SUPPORTED_CHAINS = [chain.arbitrum, chain.arbitrumRinkeby];
-
 export const DEFAULT_CHAIN = chain.arbitrum;
 
 // Contracts

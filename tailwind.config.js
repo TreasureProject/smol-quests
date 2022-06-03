@@ -3,8 +3,8 @@ const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
   mode: "jit",
-  purge: ["./src/**/*.{ts,tsx}"],
-  darkMode: false, // or 'media' or 'class'
+  content: ["./src/**/*.{ts,tsx}"],
+  darkMode: "media",
   theme: {
     fontFamily: {
       rubik: ["Rubik"],

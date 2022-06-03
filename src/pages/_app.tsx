@@ -22,7 +22,7 @@ import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
 
 import { Header } from "../components/Header";
-import { SUPPORTED_CHAINS } from "../const";
+import { DEFAULT_REFETCH_INTERVAL, SUPPORTED_CHAINS } from "../const";
 import "../css/tailwind.css";
 
 const { chains, provider } = configureChains(SUPPORTED_CHAINS, [
@@ -44,7 +44,7 @@ const wagmiClient = createClient({
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchInterval: 2000,
+      refetchInterval: DEFAULT_REFETCH_INTERVAL,
       refetchOnWindowFocus: false,
     },
   },

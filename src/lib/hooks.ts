@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 
-import { Contract } from "ethers";
+import { Contract, Signer } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import toast from "react-hot-toast";
-import { useQuery } from "react-query";
+import { useQueries, useQuery } from "react-query";
 import {
   chain,
   useAccount,
@@ -14,7 +14,12 @@ import {
   useWaitForTransaction,
 } from "wagmi";
 
-import { CONTRACT_ABIS, CONTRACT_ADDRESSES } from "../const";
+import {
+  CONTRACT_ABIS,
+  CONTRACT_ADDRESSES,
+  DEFAULT_REFETCH_INTERVAL,
+  LONG_REFETCH_INTERVAL,
+} from "../const";
 import { AppContract, ContractError } from "../types";
 import client, { marketplaceClient } from "./client";
 
@@ -44,11 +49,10 @@ export const useMoonRocksBalance = () => {
   const address = accountData?.address?.toLowerCase();
   const smolTreasuresAddress = useContractAddress(AppContract.SmolTreasures);
 
-  const { data, status } = useQuery(
+  const { data, isLoading } = useQuery(
     ["moonRocksBalance"],
     () => {
       console.debug("Re-fetching Moon Rocks balance");
-
       return marketplaceClient.getUserTokenBalance({
         id: address!,
         token: `${smolTreasuresAddress}-0x1`,
@@ -57,14 +61,50 @@ export const useMoonRocksBalance = () => {
     {
       enabled: !!isAddress,
       keepPreviousData: true,
-      refetchInterval: 10_000,
+      refetchInterval: LONG_REFETCH_INTERVAL,
     }
   );
 
   return {
-    isLoading: status === "loading",
+    isLoading,
     moonRocksBalance: data?.userTokens[0]?.quantity ?? 0,
   };
+};
+
+const getWrappedTokens = async (
+  address: string | undefined,
+  contract: Contract
+) => {
+  const balanceOf = await contract.balanceOf(address);
+  const balance = parseInt(balanceOf.toString() ?? "0");
+  const wrappedSmolsCount = balance < 10_000 ? balance : 0;
+  if (wrappedSmolsCount === 0) {
+    return [];
+  }
+
+  const tokenIds = await Promise.all(
+    Array.from({ length: wrappedSmolsCount }).map((_, i) =>
+      contract.tokenOfOwnerByIndex(address, i)
+    )
+  );
+  const tokenUris = await Promise.all(
+    tokenIds.map((tokenId) => contract.tokenURI(tokenId))
+  );
+  const tokens = await Promise.all(
+    tokenUris.map(async (uri, i) => {
+      const response = await fetch(uri);
+      const result = await response.json();
+      return {
+        ...result,
+        tokenId: parseInt(tokenIds[i]),
+        chonkSize:
+          (result.attributes?.find(
+            ({ trait_type: type }) => type === "Chonk Size"
+          )?.value ?? 0) + 1,
+      };
+    })
+  );
+  return tokens;
 };
 
 export const useUserTokens = () => {
@@ -73,77 +113,45 @@ export const useUserTokens = () => {
   const contractAddresses = useContractAddresses();
   const address = accountData?.address?.toLowerCase();
 
-  const { data: tokensData, status: tokensStatus } = useQuery(
-    ["tokens"],
-    () => {
-      console.debug("Re-fetching Smol Brains");
-
-      return client.getUserTokens({
-        id: address!,
-        collection: contractAddresses[AppContract.SmolBrains].toLowerCase(),
-      });
-    },
+  const [
+    { data: tokensData, isLoading: tokensLoading },
     {
+      data: wrappedTokensData,
+      isLoading: wrappedTokensLoading,
+      refetch: refetchWrappedTokens,
+    },
+  ] = useQueries([
+    {
+      queryKey: ["tokens"],
+      queryFn: () => {
+        console.debug("Re-fetching Smol Brains");
+        return client.getUserTokens({
+          id: address!,
+          collection: contractAddresses[AppContract.SmolBrains].toLowerCase(),
+        });
+      },
       enabled: !!address,
       keepPreviousData: true,
-    }
-  );
-
-  const {
-    data: wrappedTokensData,
-    status: wrappedTokensStatus,
-    refetch: refetchWrappedTokens,
-  } = useQuery(
-    ["wrappedTokens"],
-    async () => {
-      console.debug(`Re-fetching wSMOLs`);
-
-      const contract = new Contract(
-        contractAddresses[AppContract.WrappedSmols].toLowerCase(),
-        CONTRACT_ABIS[AppContract.WrappedSmols],
-        signer!
-      );
-
-      const balanceOf = await contract.balanceOf(accountData?.address);
-      const balance = parseInt(balanceOf.toString() ?? "0");
-      const wrappedSmolsCount = balance < 10_000 ? balance : 0;
-      if (wrappedSmolsCount === 0) {
-        return [];
-      }
-
-      const tokenIds = await Promise.all(
-        Array.from({ length: wrappedSmolsCount }).map((_, i) =>
-          contract.tokenOfOwnerByIndex(address, i)
-        )
-      );
-      const tokenUris = await Promise.all(
-        tokenIds.map((tokenId) => contract.tokenURI(tokenId))
-      );
-      const tokens = await Promise.all(
-        tokenUris.map(async (uri, i) => {
-          const response = await fetch(uri);
-          const result = await response.json();
-          return {
-            ...result,
-            tokenId: parseInt(tokenIds[i]),
-            chonkSize:
-              (result.attributes?.find(
-                ({ trait_type: type }) => type === "Chonk Size"
-              )?.value ?? 0) + 1,
-          };
-        })
-      );
-      return tokens;
     },
     {
+      queryKey: ["wrappedTokens"],
+      queryFn: () => {
+        console.debug("Re-fetching wSMOLs");
+        const contract = new Contract(
+          contractAddresses[AppContract.WrappedSmols].toLowerCase(),
+          CONTRACT_ABIS[AppContract.WrappedSmols],
+          signer!
+        );
+        return getWrappedTokens(accountData?.address, contract);
+      },
       enabled: !!signer,
       keepPreviousData: true,
-      refetchInterval: 10000,
-    }
-  );
+      refetchInterval: LONG_REFETCH_INTERVAL,
+    },
+  ]);
 
   return {
-    isLoading: tokensStatus === "loading" || wrappedTokensStatus === "loading",
+    isLoading: tokensLoading || wrappedTokensLoading,
     tokens: tokensData?.tokens,
     wrappedTokens: wrappedTokensData ?? [],
     refetchWrappedTokens,
@@ -153,8 +161,7 @@ export const useUserTokens = () => {
 const useContractRead = (
   contract: AppContract,
   functionName: string,
-  args?: any | any[],
-  staleTime?: number
+  args?: any | any[]
 ) => {
   const addressOrName = useContractAddress(contract);
   const result = useContractReadWagmi(
@@ -163,7 +170,7 @@ const useContractRead = (
       contractInterface: CONTRACT_ABIS[contract],
     },
     functionName,
-    { args, staleTime, cacheOnBlock: false }
+    { args, cacheTime: DEFAULT_REFETCH_INTERVAL }
   );
 
   return result;
@@ -239,13 +246,11 @@ const useContractWrite = (
 export const useApprove = (
   contract: AppContract,
   operator = AppContract.WrappedSmols
-) => {
-  const operatorAddress = useContractAddress(operator);
-  return useContractWrite(contract, "setApprovalForAll", [
-    operatorAddress,
+) =>
+  useContractWrite(contract, "setApprovalForAll", [
+    useContractAddress(operator),
     true,
   ]);
-};
 
 export const useIsApproved = (
   contract: AppContract,
@@ -253,12 +258,10 @@ export const useIsApproved = (
 ) => {
   const { data: accountData } = useAccount();
   const operatorAddress = useContractAddress(operator);
-  const { data } = useContractRead(
-    contract,
-    "isApprovedForAll",
-    [accountData?.address, operatorAddress],
-    2000
-  );
+  const { data } = useContractRead(contract, "isApprovedForAll", [
+    accountData?.address,
+    operatorAddress,
+  ]);
   return data;
 };
 
