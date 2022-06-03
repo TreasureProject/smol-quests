@@ -153,7 +153,8 @@ export const useUserTokens = () => {
 const useContractRead = (
   contract: AppContract,
   functionName: string,
-  args?: any | any[]
+  args?: any | any[],
+  staleTime?: number
 ) => {
   const addressOrName = useContractAddress(contract);
   const result = useContractReadWagmi(
@@ -162,7 +163,7 @@ const useContractRead = (
       contractInterface: CONTRACT_ABIS[contract],
     },
     functionName,
-    { args, cacheOnBlock: false }
+    { args, staleTime, cacheOnBlock: false }
   );
 
   return result;
@@ -171,6 +172,10 @@ const useContractRead = (
 const getCustomErrorMessage = (message: string) => {
   if (message.includes("not time to eat yet")) {
     return "Not time to eat yet!";
+  }
+
+  if (message.includes("SmolBrain: is at school")) {
+    return "Smol must drop out of school first!";
   }
 
   return message;
@@ -251,6 +256,7 @@ export const useIsApproved = (
   const { data } = useContractRead(contract, "isApprovedForAll", [
     accountData?.address,
     operatorAddress,
+    2000,
   ]);
   return data;
 };
