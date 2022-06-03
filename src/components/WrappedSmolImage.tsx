@@ -3,7 +3,10 @@ import Image, { ImageProps } from "next/image";
 import { generateIpfsUrl } from "../utils/image";
 
 type Props = Partial<ImageProps> & {
-  token: any;
+  token: {
+    image: string;
+    pfp: string;
+  };
   isPfp?: boolean;
 };
 
@@ -12,5 +15,7 @@ export const WrappedSmolImage = ({
   isPfp = false,
   ...imageProps
 }: Props) => {
-  return <Image {...imageProps} src={generateIpfsUrl(isPfp ? pfp : image)} />;
+  return (
+    <Image {...imageProps} alt="" src={generateIpfsUrl(isPfp ? pfp : image)} />
+  );
 };

@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { Contract, Signer } from "ethers";
-import { isAddress } from "ethers/lib/utils";
+import { Contract } from "ethers";
 import toast from "react-hot-toast";
 import { useQueries, useQuery } from "react-query";
 import {
@@ -25,8 +24,10 @@ import client, { marketplaceClient } from "./client";
 
 export const useBlockExplorer = () => {
   const { activeChain } = useNetwork();
-  const { url } = activeChain?.blockExplorers ?? chain.arbitrum.blockExplorers!;
-  return url;
+  return (
+    activeChain?.blockExplorers?.default.url ??
+    chain.arbitrum.blockExplorers?.default.url
+  );
 };
 
 const useContractAddresses = () => {
@@ -54,12 +55,12 @@ export const useMoonRocksBalance = () => {
     () => {
       console.debug("Re-fetching Moon Rocks balance");
       return marketplaceClient.getUserTokenBalance({
-        id: address!,
+        id: address ?? "",
         token: `${smolTreasuresAddress}-0x1`,
       });
     },
     {
-      enabled: !!isAddress,
+      enabled: !!address,
       keepPreviousData: true,
       refetchInterval: LONG_REFETCH_INTERVAL,
     }
@@ -126,7 +127,7 @@ export const useUserTokens = () => {
       queryFn: () => {
         console.debug("Re-fetching Smol Brains");
         return client.getUserTokens({
-          id: address!,
+          id: address ?? "",
           collection: contractAddresses[AppContract.SmolBrains].toLowerCase(),
         });
       },
@@ -140,7 +141,7 @@ export const useUserTokens = () => {
         const contract = new Contract(
           contractAddresses[AppContract.WrappedSmols].toLowerCase(),
           CONTRACT_ABIS[AppContract.WrappedSmols],
-          signer!
+          signer ?? undefined
         );
         return getWrappedTokens(accountData?.address, contract);
       },
@@ -194,7 +195,7 @@ const useContractWrite = (
   args?: any | any[]
 ) => {
   const addressOrName = useContractAddress(contract);
-  const { write, data, status, error, ...result } = useContractWriteWagmi(
+  const { write, data, error, ...result } = useContractWriteWagmi(
     {
       addressOrName,
       contractInterface: CONTRACT_ABIS[contract],
@@ -206,9 +207,9 @@ const useContractWrite = (
   const transaction = useWaitForTransaction({ hash: data?.hash });
 
   const toastId = useRef<string | undefined>();
-  const isLoading = transaction.status === "loading" || result.isLoading;
-  const isError = transaction.status === "error" || result.isError;
-  const isSuccess = transaction.status === "success";
+  const isLoading = transaction.isLoading || result.isLoading;
+  const isError = transaction.isError || result.isError;
+  const isSuccess = transaction.isSuccess;
 
   useEffect(() => {
     if (isLoading) {

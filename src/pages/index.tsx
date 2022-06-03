@@ -5,6 +5,7 @@ import clsx from "clsx";
 import Image from "next/image";
 import { useAccount } from "wagmi";
 
+import Banner from "../../public/img/banner.gif";
 import { Button } from "../components/Button";
 import { ConnectButton } from "../components/ConnectButton";
 import { Spinner } from "../components/Spinner";
@@ -126,7 +127,7 @@ export default function Home() {
           to go on quests and transform your Smol.
         </p>
         <div className="space-y-4">
-          <h2 className="p-3 inline-block text-2xl lg:text-3xl text-white font-medium bg-gray-primary shadow-[5px_5px_0px_rgba(255,148,77,0.5)]">
+          <h2 className="p-3 inline-block text-2xl lg:text-3xl text-white font-medium bg-gray-primary shadow-orange">
             Episode One: Chonks
           </h2>
           <p className="max-w-[75%] mx-auto text-sm text-gray-light">
@@ -141,7 +142,7 @@ export default function Home() {
           </p>
         </div>
       </div>
-      <div className="my-6 relative shadow-[13px_13px_0px_rgba(255,148,77,0.5)]">
+      <div className="my-6 relative shadow-orange-lg">
         {isSelectedWrapped ? (
           <>
             {isChonkifying && (
@@ -159,7 +160,13 @@ export default function Home() {
             />
           </>
         ) : (
-          <img alt="" src="/img/banner.gif" />
+          <Image
+            alt=""
+            src={Banner.src}
+            width={1500}
+            height={500}
+            layout="responsive"
+          />
         )}
       </div>
       <div className="mt-10 min-h-[150px] flex items-center justify-center bg-gray-primary shadow-dark-sharp">

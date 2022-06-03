@@ -1,5 +1,7 @@
+import Image from "next/image";
 import { useAccount } from "wagmi";
 
+import Logo from "../../public/img/logo.png";
 import { useMoonRocksBalance } from "../lib/hooks";
 import { ConnectButton } from "./ConnectButton";
 
@@ -10,7 +12,7 @@ export const Header = () => {
   return (
     <div className="container max-w-5xl mx-auto px-4 py-8 flex items-center justify-between">
       <div className="hidden md:block w-[50px] h-[50px] border-2 border-gray-primary rounded-full overflow-hidden">
-        <img alt="" src="/img/logo.png" />
+        <Image alt="" src={Logo.src} width={50} height={50} />
       </div>
       <div className="flex">
         {accountData?.address && !isLoadingBalance && (
