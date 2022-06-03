@@ -119,15 +119,27 @@ export default function Home() {
         <h1 className="p-5 inline-block text-4xl lg:text-6xl text-white font-bold uppercase bg-gray-primary shadow-dark-sharp">
           Smol Quests
         </h1>
-        <p className="lg:w-1/2 mx-auto text-xl text-gray-light font-medium">
+        <p className="lg:w-1/2 mx-auto text-xl text-white font-medium">
           <span className="underline decoration-orange-team underline-offset-8">
             Wrap your Smol
           </span>{" "}
           to go on quests and transform your Smol.
         </p>
-        <h2 className="p-3 inline-block text-2xl lg:text-3xl text-white font-medium bg-gray-primary shadow-[5px_5px_0px_rgba(255,148,77,0.5)]">
-          Episode One: Chonks
-        </h2>
+        <div className="space-y-4">
+          <h2 className="p-3 inline-block text-2xl lg:text-3xl text-white font-medium bg-gray-primary shadow-[5px_5px_0px_rgba(255,148,77,0.5)]">
+            Episode One: Chonks
+          </h2>
+          <p className="max-w-[75%] mx-auto text-sm text-gray-light">
+            McSmols has come to Smolville! Space travel has left the Smols
+            famished and in need of some protein. But trouble awaits them. An
+            Enjoyoooooor has sprinkled the food with a potion to make McSmols
+            customers even hungrier, turning all the Smols into{" "}
+            <span className="underline decoration-orange-team underline-offset-4">
+              chonks
+            </span>
+            .
+          </p>
+        </div>
       </div>
       <div className="my-6 relative shadow-[13px_13px_0px_rgba(255,148,77,0.5)]">
         {isSelectedWrapped ? (
