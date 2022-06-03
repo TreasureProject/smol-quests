@@ -165,7 +165,7 @@ function App({ Component, pageProps }) {
                         })()}
                       </div>
                       <div className="ml-3 w-0 flex-1">
-                        <p className="text-xs text-brown-50">
+                        <p className="text-sm text-white">
                           {resolveValue(t.message, t)}
                         </p>
                       </div>

@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
-import { Contract, Signer } from "ethers";
+import { Contract } from "ethers";
 import { isAddress } from "ethers/lib/utils";
 import toast from "react-hot-toast";
 import { useQuery } from "react-query";
@@ -113,7 +113,7 @@ export const useUserTokens = () => {
 
       const tokenIds = await Promise.all(
         Array.from({ length: wrappedSmolsCount }).map((_, i) =>
-          contract.tokenByIndex(i)
+          contract.tokenOfOwnerByIndex(address, i)
         )
       );
       const tokenUris = await Promise.all(
@@ -162,18 +162,18 @@ const useContractRead = (
       contractInterface: CONTRACT_ABIS[contract],
     },
     functionName,
-    { args }
+    { args, cacheOnBlock: false }
   );
 
-  // const [{ error }] = result;
-
-  // useEffect(() => {
-  //   if (error) {
-  //     toast.error(error.message);
-  //   }
-  // }, [error]);
-
   return result;
+};
+
+const getCustomErrorMessage = (message: string) => {
+  if (message.includes("not time to eat yet")) {
+    return "Not time to eat yet!";
+  }
+
+  return message;
 };
 
 const useContractWrite = (
@@ -182,7 +182,7 @@ const useContractWrite = (
   args?: any | any[]
 ) => {
   const addressOrName = useContractAddress(contract);
-  const { write, data, status, error } = useContractWriteWagmi(
+  const { write, data, status, error, ...result } = useContractWriteWagmi(
     {
       addressOrName,
       contractInterface: CONTRACT_ABIS[contract],
@@ -193,32 +193,61 @@ const useContractWrite = (
 
   const transaction = useWaitForTransaction({ hash: data?.hash });
 
+  const toastId = useRef<string | undefined>();
+  const isLoading = transaction.status === "loading" || result.isLoading;
+  const isError = transaction.status === "error" || result.isError;
+  const isSuccess = transaction.status === "success";
+
   useEffect(() => {
-    if (error) {
+    if (isLoading) {
+      if (toastId.current) {
+        toast.loading("Transaction in progress...", {
+          id: toastId.current,
+        });
+      } else {
+        toastId.current = toast.loading("Transaction in progress...");
+      }
+    } else if (isSuccess) {
+      toast.success(
+        "Transaction successful. Please wait for the UI to update.",
+        {
+          id: toastId.current,
+        }
+      );
+    } else if (isError) {
       const contractError = error as ContractError;
-      toast.error(contractError.data?.message ?? contractError.message);
+      const message = contractError.data?.message ?? contractError.message;
+      toast.error(getCustomErrorMessage(message), {
+        id: toastId.current,
+      });
     }
-  }, [error]);
+  }, [isSuccess, isError, isLoading, error]);
 
   return {
     write,
     data,
-    isLoading: status === "loading" || transaction.status === "loading",
+    isLoading: result.isLoading || transaction.status === "loading",
     error,
   };
 };
 
-export const useApprove = (contract: AppContract) => {
-  const operatorAddress = useContractAddress(AppContract.WrappedSmols);
+export const useApprove = (
+  contract: AppContract,
+  operator = AppContract.WrappedSmols
+) => {
+  const operatorAddress = useContractAddress(operator);
   return useContractWrite(contract, "setApprovalForAll", [
     operatorAddress,
     true,
   ]);
 };
 
-export const useIsApproved = (contract: AppContract) => {
+export const useIsApproved = (
+  contract: AppContract,
+  operator = AppContract.WrappedSmols
+) => {
   const { data: accountData } = useAccount();
-  const operatorAddress = useContractAddress(AppContract.WrappedSmols);
+  const operatorAddress = useContractAddress(operator);
   const { data } = useContractRead(contract, "isApprovedForAll", [
     accountData?.address,
     operatorAddress,

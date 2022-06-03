@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 
 import { ExternalLinkIcon } from "@heroicons/react/outline";
 import clsx from "clsx";
-import { Signer } from "ethers";
 import Image from "next/image";
-import { useAccount, useNetwork, useSigner } from "wagmi";
+import { useAccount } from "wagmi";
 
 import { Button } from "../components/Button";
 import { ConnectButton } from "../components/ConnectButton";
@@ -31,11 +30,14 @@ export default function Home() {
 
   // Approvals
   const isSmolBrainsApproved = useIsApproved(AppContract.SmolBrains);
-  const isSmolTreasuresApproved = useIsApproved(AppContract.SmolTreasures);
+  const isSmolTreasuresApproved = useIsApproved(
+    AppContract.SmolTreasures,
+    AppContract.EpisodeOne
+  );
   const { write: approveSmolBrains, isLoading: isApprovingSmolBrains } =
     useApprove(AppContract.SmolBrains);
   const { write: approveSmolTreasures, isLoading: isApprovingSmolTreasures } =
-    useApprove(AppContract.SmolTreasures);
+    useApprove(AppContract.SmolTreasures, AppContract.EpisodeOne);
 
   // Actions
   const {
@@ -80,6 +82,7 @@ export default function Home() {
     tokens?.find(({ tokenId }) => parseInt(tokenId) === selectedTokenId) ??
     wrappedTokens.find(({ tokenId }) => tokenId === selectedTokenId);
   const isSelectedWrapped = wrappedTokenIds.includes(selectedTokenId);
+  const requiresMoonRocks = selectedToken?.chonkSize === 6;
 
   useEffect(() => {
     const tokenIds = tokens?.map(({ tokenId }) => parseInt(tokenId));
@@ -123,25 +126,22 @@ export default function Home() {
           to go on quests and transform your Smol.
         </p>
       </div>
-      <div className="shadow-[13px_13px_0px_rgba(255,148,77,1)]">
+      <div className="relative shadow-[13px_13px_0px_rgba(255,148,77,1)]">
         {isSelectedWrapped ? (
           <>
-            {isChonkifying ? (
-              <div className="aspect-w-3 aspect-h-1 flex items-center justify-center bg-purple-primary">
-                <div className="flex items-center justify-center">
-                  <div className="w-10 h-10">
-                    <Spinner />
-                  </div>
+            {isChonkifying && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center">
+                <div className="w-10 h-10">
+                  <Spinner />
                 </div>
               </div>
-            ) : (
-              <WrappedSmolImage
-                token={selectedToken}
-                width={1500}
-                height={500}
-                layout="responsive"
-              />
             )}
+            <WrappedSmolImage
+              token={selectedToken}
+              width={1500}
+              height={500}
+              layout="responsive"
+            />
           </>
         ) : (
           <img alt="" src="/img/banner.gif" />
@@ -221,8 +221,8 @@ export default function Home() {
                       <div className="flex flex-col gap-3">
                         {isSelectedWrapped ? (
                           <>
-                            {!isSmolTreasuresApproved &&
-                              selectedToken.chonkSize === 5 && (
+                            <div className="flex flex-col gap-1 text-center">
+                              {requiresMoonRocks && !isSmolTreasuresApproved ? (
                                 <Button
                                   onClick={() => approveSmolTreasures()}
                                   disabled={isApprovingSmolTreasures}
@@ -231,24 +231,31 @@ export default function Home() {
                                     ? "Approving..."
                                     : "Approve Smol Treasures"}
                                 </Button>
-                              )}
-                            {selectedToken.chonkSize < 6 && (
-                              <div className="flex flex-col gap-1 text-center">
+                              ) : (
                                 <Button
                                   onClick={() =>
                                     handleChonkify(selectedTokenId)
                                   }
-                                  disabled={isChonkifying}
+                                  disabled={
+                                    isChonkifying ||
+                                    (requiresMoonRocks &&
+                                      !isSmolTreasuresApproved) ||
+                                    selectedToken.chonkSize === 7
+                                  }
                                 >
-                                  {isChonkifying ? "Snacking..." : "Chonk!"}
+                                  {selectedToken.chonkSize === 7
+                                    ? "Max Chonk Level Reached"
+                                    : isChonkifying
+                                    ? "Snacking..."
+                                    : "Chonk!"}
                                 </Button>
-                                {selectedToken.chonkSize === 5 && (
-                                  <span className="text-xs text-gray-light">
-                                    Chonk Level 7 costs 50 Moon Rocks
-                                  </span>
-                                )}
-                              </div>
-                            )}
+                              )}
+                              {selectedToken.chonkSize === 6 && (
+                                <span className="text-xs text-gray-light">
+                                  Chonk Level 7 costs 50 Moon Rocks
+                                </span>
+                              )}
+                            </div>
                             <Button
                               onClick={() => handleUnwrapSmol(selectedTokenId)}
                               disabled={isUnwrappingSmol}
