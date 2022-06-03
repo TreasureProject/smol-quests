@@ -171,7 +171,7 @@ export default function Home() {
               </div>
             ) : (
               <>
-                {tokens && tokens.length > 0 ? (
+                {(tokens && tokens.length > 0) || wrappedTokens.length > 0 ? (
                   <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-10">
                     <div className="space-y-4">
                       <h2 className="text-center font-semibold">
@@ -181,7 +181,7 @@ export default function Home() {
                         className="grid grid-cols-3 gap-4 max-h-[500px] overflow-y-auto"
                         style={{ gridAutoRows: "min-content" }}
                       >
-                        {tokens.map(({ tokenId, name, image }) => (
+                        {tokens?.map(({ tokenId, name, image }) => (
                           <button
                             key={tokenId}
                             className={clsx(
