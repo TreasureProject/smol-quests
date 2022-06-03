@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
 import { Contract, Signer } from "ethers";
+import { isAddress } from "ethers/lib/utils";
 import toast from "react-hot-toast";
 import { useQuery } from "react-query";
 import {
@@ -15,7 +16,7 @@ import {
 
 import { CONTRACT_ABIS, CONTRACT_ADDRESSES } from "../const";
 import { AppContract, ContractError } from "../types";
-import client from "./client";
+import client, { marketplaceClient } from "./client";
 
 export const useBlockExplorer = () => {
   const { activeChain } = useNetwork();
@@ -41,22 +42,17 @@ export const useContractAddress = (contract: AppContract) => {
 export const useUserTokens = () => {
   const { data: accountData } = useAccount();
   const { data: signer } = useSigner();
-  const smolBrainsAddress = useContractAddress(AppContract.SmolBrains);
-  const wrappedSmolsAddress = useContractAddress(AppContract.WrappedSmols);
+  const contractAddresses = useContractAddresses();
   const address = accountData?.address?.toLowerCase();
 
-  const {
-    data: tokensData,
-    status: tokensStatus,
-    refetch: refetchTokens,
-  } = useQuery(
+  const { data: tokensData, status: tokensStatus } = useQuery(
     ["tokens"],
     () => {
       console.debug("Re-fetching Smol Brains");
 
       return client.getUserTokens({
         id: address!,
-        collection: smolBrainsAddress,
+        collection: contractAddresses[AppContract.SmolBrains].toLowerCase(),
       });
     },
     {
@@ -64,6 +60,26 @@ export const useUserTokens = () => {
       keepPreviousData: true,
     }
   );
+
+  const { data: moonRocksBalanceData, status: moonRocksBalanceStatus } =
+    useQuery(
+      ["moonRocksBalance"],
+      () => {
+        console.debug("Re-fetching Moon Rocks balance");
+
+        return marketplaceClient.getUserTokenBalance({
+          id: address!,
+          token: `${contractAddresses[
+            AppContract.SmolTreasures
+          ].toLowerCase()}-0x1`,
+        });
+      },
+      {
+        enabled: !!isAddress,
+        keepPreviousData: true,
+        refetchInterval: 10_000,
+      }
+    );
 
   const {
     data: wrappedTokensData,
@@ -75,7 +91,7 @@ export const useUserTokens = () => {
       console.debug(`Re-fetching wSMOLs`);
 
       const contract = new Contract(
-        wrappedSmolsAddress,
+        contractAddresses[AppContract.WrappedSmols].toLowerCase(),
         CONTRACT_ABIS[AppContract.WrappedSmols],
         signer!
       );
@@ -118,10 +134,13 @@ export const useUserTokens = () => {
   );
 
   return {
-    isLoading: tokensStatus === "loading" || wrappedTokensStatus === "loading",
+    isLoading:
+      tokensStatus === "loading" ||
+      wrappedTokensStatus === "loading" ||
+      moonRocksBalanceStatus === "loading",
     tokens: tokensData?.tokens,
     wrappedTokens: wrappedTokensData ?? [],
-    refetchTokens,
+    moonRocksBalance: moonRocksBalanceData?.userTokens[0]?.quantity ?? 0,
     refetchWrappedTokens,
   };
 };
