@@ -163,7 +163,7 @@ export default function Home() {
                         Unwrapped Smols
                       </h2>
                       <div
-                        className="grid grid-cols-3 gap-4"
+                        className="grid grid-cols-3 gap-4 max-h-[500px] overflow-y-auto"
                         style={{ gridAutoRows: "min-content" }}
                       >
                         {tokens.map(({ tokenId, name, image }) => (
@@ -286,7 +286,7 @@ export default function Home() {
                       </h2>
                       {wrappedTokens.length > 0 ? (
                         <div
-                          className="grid grid-cols-3 gap-4"
+                          className="grid grid-cols-3 gap-4 max-h-[500px] overflow-y-auto"
                           style={{ gridAutoRows: "min-content" }}
                         >
                           {wrappedTokens.map((token) => (

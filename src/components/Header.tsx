@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { useAccount } from "wagmi";
 
 import { useMoonRocksBalance } from "../lib/hooks";
