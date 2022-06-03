@@ -253,11 +253,12 @@ export const useIsApproved = (
 ) => {
   const { data: accountData } = useAccount();
   const operatorAddress = useContractAddress(operator);
-  const { data } = useContractRead(contract, "isApprovedForAll", [
-    accountData?.address,
-    operatorAddress,
-    2000,
-  ]);
+  const { data } = useContractRead(
+    contract,
+    "isApprovedForAll",
+    [accountData?.address, operatorAddress],
+    2000
+  );
   return data;
 };
 
