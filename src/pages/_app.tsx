@@ -17,7 +17,7 @@ import Head from "next/head";
 import { Toaster, resolveValue } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
-import { WagmiConfig, configureChains, createClient } from "wagmi";
+import { WagmiConfig, chain, configureChains, createClient } from "wagmi";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
 
@@ -25,10 +25,15 @@ import { Header } from "../components/Header";
 import { DEFAULT_REFETCH_INTERVAL, SUPPORTED_CHAINS } from "../const";
 import "../css/tailwind.css";
 
-const { chains, provider } = configureChains(SUPPORTED_CHAINS, [
-  alchemyProvider({ alchemyId: process.env.NEXT_PUBLIC_ALCHEMY_KEY }),
-  publicProvider(),
-]);
+const { chains, provider } = configureChains(
+  process.env.NEXT_PUBLIC_TESTNET_ENABLED
+    ? [...SUPPORTED_CHAINS, chain.arbitrumRinkeby]
+    : SUPPORTED_CHAINS,
+  [
+    alchemyProvider({ alchemyId: process.env.NEXT_PUBLIC_ALCHEMY_KEY }),
+    publicProvider(),
+  ]
+);
 
 const { connectors } = getDefaultWallets({
   appName: "Smol Quests",
@@ -48,6 +53,10 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
   },
+});
+
+const rainbowKitTheme = darkTheme({
+  accentColor: "#7752de",
 });
 
 function App({ Component, pageProps }) {
@@ -114,9 +123,14 @@ function App({ Component, pageProps }) {
           <WagmiConfig client={wagmiClient}>
             <RainbowKitProvider
               chains={chains}
-              theme={darkTheme({
-                accentColor: "#7752de",
-              })}
+              theme={{
+                ...rainbowKitTheme,
+                colors: {
+                  ...rainbowKitTheme.colors,
+                  connectButtonBackground: "#31315E",
+                  modalBackground: "#15153D",
+                },
+              }}
             >
               <QueryClientProvider client={queryClient}>
                 <Main Component={Component} pageProps={pageProps} />

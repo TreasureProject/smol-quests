@@ -11,8 +11,7 @@ export const DEFAULT_REFETCH_INTERVAL = 2_000;
 export const LONG_REFETCH_INTERVAL = 8_000;
 
 // Chains
-export const SUPPORTED_CHAINS = [chain.arbitrum, chain.arbitrumRinkeby];
-export const DEFAULT_CHAIN = chain.arbitrum;
+export const SUPPORTED_CHAINS = [chain.arbitrum];
 
 // Contracts
 export const CONTRACT_ADDRESSES: Record<string, ContractMap> = {

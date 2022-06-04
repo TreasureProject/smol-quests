@@ -14,16 +14,16 @@ export const Header = () => {
       <div className="hidden md:block w-[50px] h-[50px] border-2 border-gray-primary rounded-full overflow-hidden">
         <Image alt="" src={Logo.src} width={50} height={50} />
       </div>
-      <div className="flex">
+      <div className="flex gap-2">
         {accountData?.address && !isLoadingBalance && (
           <a
-            className="flex items-center bg-gray-primary border border-gray-secondary rounded-full"
+            className="flex items-center bg-gray-primary rounded-xl shadow-lg"
             href="https://marketplace.treasure.lol/collection/smol-treasures/1"
             target="_blank"
             rel="noopener noreferrer"
           >
             <div
-              className="w-10 h-10 rounded-full overflow-hidden"
+              className="w-10 h-10 rounded-xl overflow-hidden"
               style={{
                 backgroundSize: "100px 110px",
                 backgroundPosition: "center 45%",
