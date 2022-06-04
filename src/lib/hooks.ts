@@ -222,7 +222,7 @@ const useContractWrite = (
       }
     } else if (isSuccess) {
       toast.success(
-        "Transaction successful. Please wait for the UI to update.",
+        "Transaction successful. Please wait for the UI to update or refresh the page if there is an issue.",
         {
           id: toastId.current,
         }
