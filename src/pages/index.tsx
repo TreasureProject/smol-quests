@@ -130,7 +130,7 @@ export default function Home() {
           <h2 className="p-3 inline-block text-2xl lg:text-3xl text-white font-medium bg-gray-primary shadow-orange">
             Episode One: Chonks
           </h2>
-          <p className="max-w-[75%] mx-auto text-sm text-gray-light">
+          <p className="md:max-w-[75%] mx-auto text-xs md:text-sm text-gray-light">
             McSmols has come to Smolville! Space travel has left the Smols
             famished and in need of some protein. But trouble awaits them. An
             Enjoyoooooor has sprinkled the food with a potion to make McSmols
@@ -169,7 +169,29 @@ export default function Home() {
           />
         )}
       </div>
-      <div className="mt-10 min-h-[150px] flex items-center justify-center bg-gray-primary shadow-dark-sharp">
+      <div className="mt-10 md:mt-12 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-6 text-xs md:text-sm">
+        <p className="relative p-3 md:p-4 flex items-center bg-gray-secondary">
+          <span className="flex gap-1.5">
+            <span className="text-gray-light">1.</span>
+            <span>Wrap your Smol after unstaking it from school</span>
+          </span>
+        </p>
+        <p className="p-3 md:p-4 flex items-center justify-center gap-1.5 bg-gray-secondary">
+          <span className="flex gap-1.5">
+            <span className="text-gray-light">2.</span>
+            <span>Chonk your Wrapped Smol once a day to make it chonkier</span>
+          </span>
+        </p>
+        <p className="p-3 md:p-4 flex items-center justify-center gap-1.5 bg-gray-secondary">
+          <span className="flex gap-1.5">
+            <span className="text-gray-light">3.</span>
+            <span>
+              Burn 50 Moon Rocks at Chonk Level 7 for a special surprise
+            </span>
+          </span>
+        </p>
+      </div>
+      <div className="mt-6 md:mt-8 min-h-[150px] flex items-center justify-center bg-gray-primary shadow-dark-sharp">
         {accountData ? (
           <>
             {isLoading ? (
@@ -313,7 +335,7 @@ export default function Home() {
                       <h2 className="text-center font-semibold">
                         Wrapped Smols
                       </h2>
-                      {wrappedTokens.length > 0 ? (
+                      {wrappedTokens.length > 0 && (
                         <div
                           className="grid grid-cols-3 gap-4 max-h-[500px] overflow-y-auto"
                           style={{ gridAutoRows: "min-content" }}
@@ -338,19 +360,6 @@ export default function Home() {
                               />
                             </button>
                           ))}
-                        </div>
-                      ) : (
-                        <div className="bg-gray-secondary p-6">
-                          <ol className="list-decimal pl-4 space-y-6">
-                            <li>Wrap your Smol</li>
-                            <li>
-                              Chonk your Wrapped Smol once a day make it
-                              chonkier
-                            </li>
-                            <li>
-                              Burn 50 Moon Rocks on Day 7 for a special surprise
-                            </li>
-                          </ol>
                         </div>
                       )}
                     </div>
