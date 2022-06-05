@@ -1,5 +1,4 @@
 const colors = require("tailwindcss/colors");
-const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
   mode: "jit",
@@ -21,11 +20,13 @@ module.exports = {
           secondary: "#8A62E9",
           dark: "#372B79",
           darker: "#15153D",
+          darkest: "#181834",
         },
         gray: {
           primary: "#31315E",
           secondary: "#484870",
           light: "#A3A3B7",
+          darker: "#5F5F82",
         },
       },
       boxShadow: {

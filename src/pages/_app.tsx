@@ -21,6 +21,7 @@ import { WagmiConfig, chain, configureChains, createClient } from "wagmi";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
 
+import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
 import { DEFAULT_REFETCH_INTERVAL, SUPPORTED_CHAINS } from "../const";
 import "../css/tailwind.css";
@@ -207,6 +208,7 @@ const Main = ({ pageProps, Component }) => {
     <div className="relative">
       <Header />
       <Component {...pageProps} />
+      <Footer />
     </div>
   );
 };

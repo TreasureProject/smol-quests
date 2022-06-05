@@ -30,7 +30,7 @@ export const useBlockExplorer = () => {
   );
 };
 
-const useContractAddresses = () => {
+export const useContractAddresses = () => {
   const { activeChain } = useNetwork();
   const chainName = activeChain?.name;
   if (!chainName || !CONTRACT_ADDRESSES[chainName]) {
