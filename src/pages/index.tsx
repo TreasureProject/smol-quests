@@ -5,7 +5,7 @@ import clsx from "clsx";
 import Image from "next/image";
 import { useAccount } from "wagmi";
 
-import Banner from "../../public/img/banner.gif";
+import { BannerImage } from "../components/BannerImage";
 import { Button } from "../components/Button";
 import { ConnectButton } from "../components/ConnectButton";
 import { Spinner } from "../components/Spinner";
@@ -142,33 +142,11 @@ export default function Home() {
           </p>
         </div>
       </div>
-      <div className="my-6 relative shadow-orange-lg">
-        {isSelectedWrapped ? (
-          <>
-            {isChonkifying && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center">
-                <div className="w-10 h-10">
-                  <Spinner />
-                </div>
-              </div>
-            )}
-            <WrappedSmolImage
-              token={selectedToken}
-              width={1500}
-              height={500}
-              layout="responsive"
-            />
-          </>
-        ) : (
-          <Image
-            alt=""
-            src={Banner.src}
-            width={1500}
-            height={500}
-            layout="responsive"
-          />
-        )}
-      </div>
+      <BannerImage
+        selectedTokenId={selectedTokenId}
+        wrappedTokens={wrappedTokens}
+        isLoading={isChonkifying}
+      />
       <div className="mt-10 md:mt-12 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-6 text-xs md:text-sm">
         <p className="relative p-3 md:p-4 flex items-center bg-gray-secondary">
           <span className="flex gap-1.5">
@@ -201,7 +179,7 @@ export default function Home() {
             ) : (
               <>
                 {(tokens && tokens.length > 0) || wrappedTokens.length > 0 ? (
-                  <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-10">
+                  <div className="p-8 w-full grid grid-cols-1 md:grid-cols-3 gap-10">
                     <div className="space-y-4">
                       <h2 className="text-center font-semibold">
                         Unwrapped Smols

@@ -1,12 +1,10 @@
 import Image, { ImageProps } from "next/image";
 
+import type { WrappedSmolToken } from "../types";
 import { generateIpfsUrl } from "../utils/image";
 
 type Props = Partial<ImageProps> & {
-  token: {
-    image: string;
-    pfp: string;
-  };
+  token: WrappedSmolToken;
   isPfp?: boolean;
 };
 
