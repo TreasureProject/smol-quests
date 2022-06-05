@@ -30,6 +30,9 @@ export const BannerImage = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isReversed, setIsReversed] = useState(false);
   const [selectedFrenId, setSelectedFrenId] = useState<number | undefined>();
+  const isSelectedWrapped = wrappedTokens.find(
+    ({ tokenId }) => tokenId === selectedTokenId
+  );
 
   const selectedTokenImageSrc = wrappedTokens.find(
     ({ tokenId }) => tokenId === selectedTokenId
@@ -119,7 +122,7 @@ export const BannerImage = ({
 
   return (
     <div className="my-6 relative group shadow-orange-lg">
-      {selectedTokenId ? (
+      {selectedTokenId && isSelectedWrapped ? (
         <>
           {isLoading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center">
