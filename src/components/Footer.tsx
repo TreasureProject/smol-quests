@@ -29,7 +29,7 @@ export const Footer = () => {
   return (
     <div className="px-8 py-12 bg-purple-darkest">
       <div className="container max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="space-y-2">
+        <div className="space-y-2 text-center md:text-left">
           <div className="flex items-center gap-2 text-gray-light">
             {links.map(({ title, href, Icon }) => (
               <a key={title} href={href} title={title} className="group">
