@@ -8,8 +8,10 @@ import { useAccount } from "wagmi";
 import { BannerImage } from "../components/BannerImage";
 import { Button } from "../components/Button";
 import { ConnectButton } from "../components/ConnectButton";
+import Countdown from "../components/Countdown";
 import { Spinner } from "../components/Spinner";
 import { WrappedSmolImage } from "../components/WrappedSmolImage";
+import { EPISODE_ACTION_INTERVAL } from "../const";
 import {
   useApprove,
   useChonkify,
@@ -20,6 +22,7 @@ import {
 } from "../lib/hooks";
 import { AppContract } from "../types";
 import { generateMarketplaceIpfsUrl } from "../utils/image";
+import { getShortTimestamp } from "../utils/time";
 
 export default function Home() {
   const { data: accountData } = useAccount();
@@ -83,7 +86,9 @@ export default function Home() {
     tokens?.find(({ tokenId }) => parseInt(tokenId) === selectedTokenId) ??
     wrappedTokens.find(({ tokenId }) => tokenId === selectedTokenId);
   const isSelectedWrapped = wrappedTokenIds.includes(selectedTokenId);
-  const requiresMoonRocks = selectedToken?.chonkSize === 6;
+  const requiresMoonRocks = selectedToken?.episodeStat === 6;
+  const nextEpisodeActionTime =
+    (selectedToken?.lastActionTime ?? 0) + EPISODE_ACTION_INTERVAL;
 
   useEffect(() => {
     const tokenIds = tokens?.map(({ tokenId }) => parseInt(tokenId));
@@ -226,7 +231,7 @@ export default function Home() {
                               layout="responsive"
                             />
                             <span className="block p-2 text-xs font-semibold bg-purple-secondary">
-                              Chonk Level {selectedToken.chonkSize}
+                              Chonk Level {selectedToken.episodeStat}
                             </span>
                           </>
                         ) : (
@@ -262,17 +267,24 @@ export default function Home() {
                                     isChonkifying ||
                                     (requiresMoonRocks &&
                                       !isSmolTreasuresApproved) ||
-                                    selectedToken.chonkSize === 7
+                                    selectedToken.episodeStat === 7
                                   }
                                 >
-                                  {selectedToken.chonkSize === 7
+                                  {selectedToken.episodeStat === 7
                                     ? "Max Chonk Level Reached"
                                     : isChonkifying
                                     ? "Snacking..."
                                     : "Chonk!"}
                                 </Button>
                               )}
-                              {selectedToken.chonkSize === 6 && (
+                              {selectedToken.episodeStat < 7 &&
+                                getShortTimestamp() < nextEpisodeActionTime && (
+                                  <span className="text-xs text-gray-light">
+                                    Next chonk available in{" "}
+                                    <Countdown target={nextEpisodeActionTime} />
+                                  </span>
+                                )}
+                              {selectedToken.episodeStat === 6 && (
                                 <span className="text-xs text-gray-light">
                                   Chonk Level 7 costs 50 Moon Rocks
                                 </span>

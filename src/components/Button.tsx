@@ -19,7 +19,7 @@ export const Button = ({
         "text-white font-medium bg-purple-primary rounded-md transition-all",
         size === "sm" ? "px-3 py-1" : "px-4 py-3",
         disabled
-          ? "opacity-50"
+          ? "opacity-50 cursor-not-allowed"
           : "hover:bg-purple-hover active:shadow-purple-active",
         className
       )}

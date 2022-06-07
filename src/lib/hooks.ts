@@ -15,6 +15,7 @@ import {
 
 import {
   EpisodeOne,
+  EpisodeOne__factory,
   WrappedSmols,
   WrappedSmols__factory,
 } from "../../generated/types";
@@ -82,7 +83,11 @@ export const useMoonRocksBalance = () => {
   };
 };
 
-const getWrappedTokens = async (address: string, contract: WrappedSmols) => {
+const getWrappedTokens = async (
+  address: string,
+  contract: WrappedSmols,
+  episodeContract: EpisodeOne
+) => {
   const balanceOf = await contract.balanceOf(address);
   const balance = parseInt(balanceOf.toString() ?? "0");
   const wrappedSmolsCount = balance < 10_000 ? balance : 0;
@@ -98,6 +103,9 @@ const getWrappedTokens = async (address: string, contract: WrappedSmols) => {
   const tokenUris = await Promise.all(
     tokenIds.map((tokenId) => contract.tokenURI(tokenId))
   );
+  const lastChonks = await Promise.all(
+    tokenIds.map((tokenId) => episodeContract.lastChonk(tokenId))
+  );
   const tokens = await Promise.all(
     tokenUris.map(async (uri, i) => {
       const response = await fetch(uri);
@@ -105,7 +113,8 @@ const getWrappedTokens = async (address: string, contract: WrappedSmols) => {
       return {
         ...result,
         tokenId: tokenIds[i].toNumber(),
-        chonkSize:
+        lastActionTime: lastChonks[i].toNumber(),
+        episodeStat:
           (result.attributes?.find(
             ({ trait_type: type }) => type === "Chonk Size"
           )?.value ?? 0) + 1,
@@ -149,7 +158,11 @@ export const useUserTokens = () => {
           contractAddresses[AppContract.WrappedSmols].toLowerCase(),
           signer!
         );
-        return getWrappedTokens(address!, contract);
+        const episodeContract = EpisodeOne__factory.connect(
+          contractAddresses[AppContract.EpisodeOne].toLowerCase(),
+          signer!
+        );
+        return getWrappedTokens(address!, contract, episodeContract);
       },
       enabled: !!address && !!signer,
       keepPreviousData: true,

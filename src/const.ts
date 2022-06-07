@@ -9,6 +9,9 @@ import { AppContract, ContractMap } from "./types";
 
 export const DEFAULT_REFETCH_INTERVAL = 2_000;
 export const LONG_REFETCH_INTERVAL = 8_000;
+export const EPISODE_ACTION_INTERVAL = process.env.NEXT_PUBLIC_TESTNET_ENABLED
+  ? 90
+  : 86_430;
 
 // Chains
 export const SUPPORTED_CHAINS = [chain.arbitrum];
