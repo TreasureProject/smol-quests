@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { Contract } from "ethers";
+import type { BaseContract } from "ethers";
 import toast from "react-hot-toast";
 import { useQueries, useQuery } from "react-query";
 import {
@@ -13,6 +13,11 @@ import {
   useWaitForTransaction,
 } from "wagmi";
 
+import {
+  EpisodeOne,
+  WrappedSmols,
+  WrappedSmols__factory,
+} from "../../generated/types";
 import {
   CONTRACT_ABIS,
   CONTRACT_ADDRESSES,
@@ -45,6 +50,11 @@ export const useContractAddress = (contract: AppContract) => {
   return addresses[contract].toLowerCase();
 };
 
+const useContract = (contract: AppContract) => ({
+  address: useContractAddress(contract),
+  abi: CONTRACT_ABIS[contract],
+});
+
 export const useMoonRocksBalance = () => {
   const { data: accountData } = useAccount();
   const address = accountData?.address?.toLowerCase();
@@ -72,10 +82,7 @@ export const useMoonRocksBalance = () => {
   };
 };
 
-const getWrappedTokens = async (
-  address: string | undefined,
-  contract: Contract
-) => {
+const getWrappedTokens = async (address: string, contract: WrappedSmols) => {
   const balanceOf = await contract.balanceOf(address);
   const balance = parseInt(balanceOf.toString() ?? "0");
   const wrappedSmolsCount = balance < 10_000 ? balance : 0;
@@ -97,7 +104,7 @@ const getWrappedTokens = async (
       const result = await response.json();
       return {
         ...result,
-        tokenId: parseInt(tokenIds[i]),
+        tokenId: tokenIds[i].toNumber(),
         chonkSize:
           (result.attributes?.find(
             ({ trait_type: type }) => type === "Chonk Size"
@@ -138,14 +145,13 @@ export const useUserTokens = () => {
       queryKey: ["wrappedTokens"],
       queryFn: () => {
         console.debug("Re-fetching wSMOLs");
-        const contract = new Contract(
+        const contract = WrappedSmols__factory.connect(
           contractAddresses[AppContract.WrappedSmols].toLowerCase(),
-          CONTRACT_ABIS[AppContract.WrappedSmols],
-          signer ?? undefined
+          signer!
         );
-        return getWrappedTokens(accountData?.address, contract);
+        return getWrappedTokens(address!, contract);
       },
-      enabled: !!signer,
+      enabled: !!address && !!signer,
       keepPreviousData: true,
       refetchInterval: LONG_REFETCH_INTERVAL,
     },
@@ -159,23 +165,23 @@ export const useUserTokens = () => {
   };
 };
 
-const useContractRead = (
+function useContractRead<T extends BaseContract>(
   contract: AppContract,
-  functionName: string,
-  args?: any | any[]
-) => {
-  const addressOrName = useContractAddress(contract);
+  functionName: keyof T["functions"],
+  params?: Parameters<typeof useContractReadWagmi>[2]
+) {
+  const { address, abi } = useContract(contract);
   const result = useContractReadWagmi(
     {
-      addressOrName,
-      contractInterface: CONTRACT_ABIS[contract],
+      addressOrName: address,
+      contractInterface: abi,
     },
-    functionName,
-    { args, cacheTime: DEFAULT_REFETCH_INTERVAL }
+    functionName as string,
+    params
   );
 
   return result;
-};
+}
 
 const getCustomErrorMessage = (message: string) => {
   if (message.includes("not time to eat yet")) {
@@ -189,19 +195,19 @@ const getCustomErrorMessage = (message: string) => {
   return message;
 };
 
-const useContractWrite = (
+function useContractWrite<T extends BaseContract>(
   contract: AppContract,
-  functionName: string,
-  args?: any | any[]
-) => {
-  const addressOrName = useContractAddress(contract);
+  functionName: keyof T["functions"],
+  params?: Parameters<typeof useContractWriteWagmi>[2]
+) {
+  const { address, abi } = useContract(contract);
   const { write, data, error, ...result } = useContractWriteWagmi(
     {
-      addressOrName,
-      contractInterface: CONTRACT_ABIS[contract],
+      addressOrName: address,
+      contractInterface: abi,
     },
-    functionName,
-    { args }
+    functionName as string,
+    params
   );
 
   const transaction = useWaitForTransaction({ hash: data?.hash });
@@ -242,16 +248,15 @@ const useContractWrite = (
     isLoading: result.isLoading || transaction.status === "loading",
     error,
   };
-};
+}
 
 export const useApprove = (
   contract: AppContract,
   operator = AppContract.WrappedSmols
 ) =>
-  useContractWrite(contract, "setApprovalForAll", [
-    useContractAddress(operator),
-    true,
-  ]);
+  useContractWrite(contract, "setApprovalForAll", {
+    args: [useContractAddress(operator), true],
+  });
 
 export const useIsApproved = (
   contract: AppContract,
@@ -259,18 +264,18 @@ export const useIsApproved = (
 ) => {
   const { data: accountData } = useAccount();
   const operatorAddress = useContractAddress(operator);
-  const { data } = useContractRead(contract, "isApprovedForAll", [
-    accountData?.address,
-    operatorAddress,
-  ]);
+  const { data } = useContractRead(contract, "isApprovedForAll", {
+    args: [accountData?.address, operatorAddress],
+    cacheTime: DEFAULT_REFETCH_INTERVAL,
+  });
   return data;
 };
 
 export const useWrapSmol = () =>
-  useContractWrite(AppContract.WrappedSmols, "wrap");
+  useContractWrite<WrappedSmols>(AppContract.WrappedSmols, "wrap");
 
 export const useUnwrapSmol = () =>
-  useContractWrite(AppContract.WrappedSmols, "unwrap");
+  useContractWrite<WrappedSmols>(AppContract.WrappedSmols, "unwrap");
 
 export const useChonkify = () =>
-  useContractWrite(AppContract.EpisodeOne, "chonkify");
+  useContractWrite<EpisodeOne>(AppContract.EpisodeOne, "chonkify");
