@@ -1,6 +1,6 @@
 export const generateIpfsUrl = (path?: string) => {
   const normalizedPath = path?.replace("ipfs://", "") ?? "";
-  return `https://smolart.mypinata.cloud/ipfs/${normalizedPath}`;
+  return `https://cloudflare-ipfs.com/ipfs/${normalizedPath}`;
 };
 
 export const generateMarketplaceIpfsUrl = (path?: string) => {
